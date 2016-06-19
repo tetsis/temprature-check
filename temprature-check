@@ -3,7 +3,27 @@
 #引数
 #1: ディスクのパス（例 /dev/sda）
 
-temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
+if [ "$1" = "" ] ; then
+    echo "引数が足りません。ディスクへのパスを引数として入力してください。"
+    echo "例: /dev/sda"
+    exit
+fi
 
-echo $temprature
+diskFlag=`df | grep -c $1`
+if [ $diskFlag -eq 0 ]; then
+    echo "指定されたディスク($1)が存在しません。"
+    exit
+fi
+
+temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
+date=`LANG=en_US.UTF-8 date +"%b %d %T"`
+
+echo "$date $temprature"
+
+#温度がしきい値以上ならシャットダウン
+if [ $temprature -ge 40 ]; then
+    echo "5分後にシャットダウンします"
+    wall "########This machine will shuts down after 5 minute########"
+    shutdown -h +5
+fi
 
