@@ -1,0 +1,9 @@
+#!/bin/sh
+
+#引数
+#1: ディスクのパス（例 /dev/sda）
+
+temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
+
+echo $temprature
+
