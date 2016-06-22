@@ -3,6 +3,11 @@
 #引数
 #1: ディスクのパス（例 /dev/sda）
 
+if [ ${EUID:-${UID}} != 0 ]; then
+    echo "実行ユーザがrootではありません。このスクリプトはrootで実行してください。"
+    exit
+fi
+
 if [ "$1" = "" ] ; then
     echo "引数が足りません。ディスクへのパスを引数として入力してください。"
     echo "例: /dev/sda"
@@ -15,14 +20,19 @@ if [ $diskFlag -eq 0 ]; then
     exit
 fi
 
-temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
 date=`LANG=en_US.UTF-8 date +"%b %d %T"`
+temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
 
 echo "$date $temprature"
+
+#ログ出力
+echo "[$date]: $temprature" >> temprature-check.log
 
 #温度がしきい値以上ならシャットダウン
 if [ $temprature -ge 40 ]; then
     echo "5分後にシャットダウンします"
+    #ログ出力
+    echo "[$date]: This machine will shuts down after 5 minute" >> temprature-check.log
     wall "########This machine will shuts down after 5 minute########"
     shutdown -h +5
 fi
