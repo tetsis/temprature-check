@@ -26,13 +26,14 @@ temprature=`smartctl -a $1 | grep "Temperature_Celsius" | cut -d " " -f 36`
 echo "$date $temprature"
 
 #ログ出力
-echo "[$date]: $temprature" >> temprature-check.log
+fileName=`dirname $0`"/temprature-check.log"
+echo "[$date]: $temprature" >> $fileName
 
 #温度がしきい値以上ならシャットダウン
 if [ $temprature -ge 40 ]; then
     echo "5分後にシャットダウンします"
     #ログ出力
-    echo "[$date]: This machine will shuts down after 5 minute" >> temprature-check.log
+    echo "[$date]: This machine will shuts down after 5 minute" >> $fileName
     wall "########This machine will shuts down after 5 minute########"
     shutdown -h +5
 fi
